@@ -32,7 +32,7 @@ Then use it in a project::
     	{{ form.media.css }}
     </head>
 
-How to use in admin:
+How to use in admin::
 
     # admin.py
     from dadata.widgets import DadataAddressWidget
