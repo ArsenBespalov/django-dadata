@@ -59,7 +59,7 @@ class DadataWidget(forms.TextInput):
             options['type'] = self.widget_type
         return options
                    
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, rerender=None):
          
         jscode = self.jscode
         options = self.get_options()
