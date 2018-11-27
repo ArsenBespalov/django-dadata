@@ -82,11 +82,11 @@ class DadataWidget(forms.TextInput):
     
     class Media:
         js = (#'kladr_api/js/jquery.kladr.min.js',
-               'https://dadata.ru/static/js/lib/jquery.suggestions-15.8.min.js',
+               'https://cdn.jsdelivr.net/npm/suggestions-jquery@18.11.1/dist/js/jquery.suggestions.min.js',
               )
         
         css = {
-               'all': ('https://dadata.ru/static/css/lib/suggestions-15.8.css',
+               'all': ('https://cdn.jsdelivr.net/npm/suggestions-jquery@18.11.1/dist/css/suggestions.min.css',
                        'dadata/css/common.css',
                        )
                } 
