@@ -32,6 +32,30 @@ Then use it in a project::
     	{{ form.media.css }}
     </head>
 
+How to use in admin:
+
+    # admin.py
+    from dadata.widgets import DadataAddressWidget
+    
+    class DaDataForm(forms.ModelForm):
+        class Meta:
+            model = Address
+            widgets = {
+                'address': DadataAddressWidget(attrs={
+                    "data-linked-fields": {
+                        "lat": "#id_lat",
+                        "lon": "#id_lon"
+                    }
+                })
+            }
+            fields = '__all__'
+            
+    class AddressAdmin(admin.ModelAdmin):
+        form = DaDataForm
+        
+    admin.site.register(Address, AddressAdmin)
+
+
 Features
 --------
 
