@@ -81,19 +81,21 @@ class DadataWidget(forms.TextInput):
             if jscode:
                 jscode = self.render_jscript(options, jscode)
 
-        s = unicode(super(DadataWidget, self).render(name, value, attrs))
+        s = unicode(super(DadataWidget, self).render(
+            name, value, attrs, renderer))
         s += jscode
         return mark_safe(s)
 
     class Media:
         js = (  # 'kladr_api/js/jquery.kladr.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js',
             'https://cdn.jsdelivr.net/npm/suggestions-jquery@18.11.1/dist/js/jquery.suggestions.min.js',
         )
 
         css = {
-            'all': ('https://cdn.jsdelivr.net/npm/suggestions-jquery@18.11.1/dist/css/suggestions.min.css',
-                    'dadata/css/common.css',
-                    )
+            'all': (
+                'https://cdn.jsdelivr.net/npm/suggestions-jquery@18.11.1/dist/css/suggestions.min.css',
+            )
         }
 
 
@@ -103,7 +105,10 @@ class DadataAddressWidget(DadataWidget):
     Uses dadata.ru JQuery plugin for suggestions.
     """
     widget_type = 'ADDRESS'
-    jscode = """$(linked_fields['lat']).val(suggestion.data.geo_lat);
+    jscode = """linked_fields = $(this).data('linked-fields');
+                linked_fields = linked_fields.replace(/'/g, '"');
+                linked_fields = JSON.parse(linked_fields);
+                $(linked_fields['lat']).val(suggestion.data.geo_lat);
                 $(linked_fields['lon']).val(suggestion.data.geo_lon);
              """
 
@@ -114,7 +119,10 @@ class DadataOrgWidget(DadataWidget):
     Uses dadata.ru JQuery plugin for suggestions.
     """
     widget_type = 'PARTY'
-    jscode = """$(linked_fields['inn']).val(suggestion.data.inn);
+    jscode = """linked_fields = $(this).data('linked-fields');
+                linked_fields = linked_fields.replace(/'/g, '"');
+                linked_fields = JSON.parse(linked_fields);
+                $(linked_fields['inn']).val(suggestion.data.inn);
                 $(linked_fields['kpp']).val(suggestion.data.kpp);
             """
 
@@ -125,6 +133,9 @@ class DadataBankWidget(DadataWidget):
     Uses dadata.ru JQuery plugin for suggestions.
     """
     widget_type = 'BANK'
-    jscode = """$(linked_fields['bic']).val(suggestion.data.bic);
+    jscode = """linked_fields = $(this).data('linked-fields');
+                linked_fields = linked_fields.replace(/'/g, '"');
+                linked_fields = JSON.parse(linked_fields);
+                $(linked_fields['bic']).val(suggestion.data.bic);
                 $(linked_fields['corr']).val(suggestion.data.correspondent_account);
             """
