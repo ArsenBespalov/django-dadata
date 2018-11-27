@@ -1,3 +1,4 @@
+import sys
 import json
 from django import forms
 from django.utils.html import conditional_escape, format_html
@@ -5,10 +6,14 @@ from django.utils.safestring import mark_safe
 
 from .settings import DADATA_API_URL, DADATA_API_TOKEN
 
+if sys.version_info[0] >= 3:
+    unicode = str
+
+
 class DadataWidget(forms.TextInput):
     """
     Base class for dadata jquery widgets
-    
+
     Subclass and define widget_type. It can be 
     ('NAME', 'PARTY', 'ADDRESS', 'BANK', 'EMAIL')
     see https://dadata.ru/suggestions/usage/
@@ -16,16 +21,16 @@ class DadataWidget(forms.TextInput):
     # subclasses should override this props
     jscode = "console.log(suggestion);"
     widget_type = None
-     
+
     options = {
-        'url' : DADATA_API_URL,
-        'token' : DADATA_API_TOKEN,
-        'count' : 5,
-        'input_id' : 'id_name',
-        'type' : widget_type,
-        'linked_fields' : {}, # should be a map like { '<dadata_field_name>' : '<input_id>' }
+        'url': DADATA_API_URL,
+        'token': DADATA_API_TOKEN,
+        'count': 5,
+        'input_id': 'id_name',
+        'type': widget_type,
+        'linked_fields': {},  # should be a map like { '<dadata_field_name>' : '<input_id>' }
     }
-    
+
     def start_jscript(self, options):
         jscode = """<script type="text/javascript">
                         $(document).ready(function() {\n
@@ -36,9 +41,9 @@ class DadataWidget(forms.TextInput):
                                 count: %(count)s,
                                 onSelect: function(suggestion) {\n
                                     linked_fields = %(linked_fields)s;
-                        """ % options 
+                        """ % options
         return jscode
-    
+
     def close_jscript(self):
         return """                        }\n
                                 });\n
@@ -46,11 +51,11 @@ class DadataWidget(forms.TextInput):
 
     def render_jscript(self, options, inner_js=None):
         return self.start_jscript(options) + inner_js + self.close_jscript()
-    
+
     def get_options(self):
         """
         Subclass to add/modify options or drop unneccessary.
-        
+
         :return: Dictionary of options to be passed to widget's javascript
         :rtype: :py:obj:`dict`
         """
@@ -58,38 +63,39 @@ class DadataWidget(forms.TextInput):
         if self.widget_type:
             options['type'] = self.widget_type
         return options
-                   
-    def render(self, name, value, attrs=None, rerender=None):
-         
+
+    def render(self, name, value, attrs=None, renderer=None):
+
         jscode = self.jscode
         options = self.get_options()
         attrs = self.build_attrs(attrs)
         attrs['autocomplete'] = 'off'
-        
+
         if self.widget_type:
             id_ = attrs.get('id', None)
-            
+
             linked_fields_ = attrs.get('data-linked-fields', None)
             if linked_fields_:
                 options['linked_fields'] = json.dumps(linked_fields_)
             options['input_id'] = id_
             if jscode:
-                jscode = self.render_jscript(options, jscode) 
-        
+                jscode = self.render_jscript(options, jscode)
+
         s = unicode(super(DadataWidget, self).render(name, value, attrs))
         s += jscode
         return mark_safe(s)
-    
+
     class Media:
-        js = (#'kladr_api/js/jquery.kladr.min.js',
-               'https://cdn.jsdelivr.net/npm/suggestions-jquery@18.11.1/dist/js/jquery.suggestions.min.js',
-              )
-        
+        js = (  # 'kladr_api/js/jquery.kladr.min.js',
+            'https://cdn.jsdelivr.net/npm/suggestions-jquery@18.11.1/dist/js/jquery.suggestions.min.js',
+        )
+
         css = {
-               'all': ('https://cdn.jsdelivr.net/npm/suggestions-jquery@18.11.1/dist/css/suggestions.min.css',
-                       'dadata/css/common.css',
-                       )
-               } 
+            'all': ('https://cdn.jsdelivr.net/npm/suggestions-jquery@18.11.1/dist/css/suggestions.min.css',
+                    'dadata/css/common.css',
+                    )
+        }
+
 
 class DadataAddressWidget(DadataWidget):
     """
@@ -100,7 +106,8 @@ class DadataAddressWidget(DadataWidget):
     jscode = """$(linked_fields['lat']).val(suggestion.data.geo_lat);
                 $(linked_fields['lon']).val(suggestion.data.geo_lon);
              """
-        
+
+
 class DadataOrgWidget(DadataWidget):
     """
     Russian organisation select input.
@@ -111,6 +118,7 @@ class DadataOrgWidget(DadataWidget):
                 $(linked_fields['kpp']).val(suggestion.data.kpp);
             """
 
+
 class DadataBankWidget(DadataWidget):
     """
     Russian bank select input.
@@ -119,4 +127,4 @@ class DadataBankWidget(DadataWidget):
     widget_type = 'BANK'
     jscode = """$(linked_fields['bic']).val(suggestion.data.bic);
                 $(linked_fields['corr']).val(suggestion.data.correspondent_account);
-            """       
+            """
